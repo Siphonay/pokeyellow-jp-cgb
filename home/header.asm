@@ -1,7 +1,8 @@
 ; rst vectors (unused)
 
 SECTION "rst0", ROM0[$0000]
-	rst $38
+	_Bankswitch::
+		jp Bankswitch
 
 	ds $08 - @, 0 ; unused
 
@@ -72,7 +73,7 @@ SECTION "joypad", ROM0[$0060]
 
 	ds $68 - @, 0 ; unused
 
-SECTION "Header", ROM0[$0100]
+SECTION "Header", ROM0[$0103]
 
 Start::
 ; Nintendo requires all Game Boy ROMs to begin with a nop ($00) and a jp ($C3)
@@ -83,6 +84,6 @@ Start::
 ; The Game Boy cartridge header data is patched over by rgbfix.
 ; This makes sure it doesn't get used for anything else.
 
-	ds $0150 - @
+	ds $0153 - @
 
 ENDSECTION

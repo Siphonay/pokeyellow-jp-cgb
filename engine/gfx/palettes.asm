@@ -311,11 +311,30 @@ YellowIntroPaletteAction::
 	and a
 	jr nz, .asm_720bd
 	ld hl, PalPacket_Generic
-	jp SendSGBPacket
+	ldh a, [hOnCGB]
+	and a
+	jp z, SendSGBPacket
+	jp InitCGBPalettes
 
 .asm_720bd
 	ld hl, PalPacket_PikachusBeach
-	jp SendSGBPacket
+	ldh a, [hOnCGB]
+	and a
+	jp z, SendSGBPacket
+	call InitCGBPalettes
+	ld hl, PalPacket_Generic
+	inc hl
+	ld a, [hli]
+	call GetCGBBasePalAddress
+	ld a, e
+	ld [wCGBBasePalPointers + 2], a
+	ld a, d
+	ld [wCGBBasePalPointers + 2 + 1], a
+	xor a ; CONVERT_BGP
+	call DMGPalToCGBPal
+	ld a, 1
+	call TransferCurBGPData
+	ret
 
 LoadOverworldPikachuFrontpicPalettes::
 	ld hl, PalPacket_Empty
@@ -329,7 +348,15 @@ LoadOverworldPikachuFrontpicPalettes::
 	ld a, PAL_PIKACHU_PORTRAIT
 	ld [hl], a
 	ld hl, wPalPacket
+	ldh a, [hOnCGB]
+	and a
+	jr nz, .cgb_1
 	call SendSGBPacket
+	jr .okay_1
+
+.cgb_1
+	call InitCGBPalettes
+.okay_1
 	ld hl, BlkPacket_WholeScreen
 	ld de, wPalPacket
 	ld bc, $10
@@ -346,7 +373,15 @@ LoadOverworldPikachuFrontpicPalettes::
 	ld a, $a
 	ld [hl], a
 	ld hl, wPalPacket
+	ldh a, [hOnCGB]
+	and a
+	jr nz, .cgb_2
 	call SendSGBPacket
+	jr .okay_2
+
+.cgb_2
+	call InitCGBPalettes
+.okay_2
 	ret
 
 GetPal_Pikachu::
@@ -505,10 +540,20 @@ LoadSGB:
 	xor a
 	ld [wOnSGB], a
 	call CheckSGB
-	ret nc
+	jr c, .onSGB
+	ldh a, [hOnCGB]
+	and a
+	jr z, .onDMG
 	ld a, 1
 	ld [wOnSGB], a
+.onDMG
+	ret
+.onSGB
+	ld a, $1
+	ld [wOnSGB], a
+	di
 	call PrepareSuperNintendoVRAMTransfer
+	ei
 	ld a, 1
 	ld [wCopyingSGBTileData], a
 	ld de, ChrTrnPacket
@@ -617,6 +662,7 @@ CopyGfxToSuperNintendoVRAM:
 	call DisableLCD
 	ld a, $e4
 	ldh [rBGP], a
+	call _UpdateCGBPal_BGP_CheckDMG
 	ld de, vChars1
 	ld a, [wCopyingSGBTileData]
 	and a
@@ -647,6 +693,7 @@ CopyGfxToSuperNintendoVRAM:
 	call SendSGBPacket
 	xor a
 	ldh [rBGP], a
+	call _UpdateCGBPal_BGP_CheckDMG
 	ei
 	ret
 
@@ -664,10 +711,352 @@ Wait7000:
 	ret
 
 SendSGBPackets:
+	ldh a, [hOnCGB]
+	and a
+	jr z, .notCGB
+	push de
+	call InitCGBPalettes
+	pop hl
+	call InitCGBPalettes
+	ldh a, [rLCDC]
+	and LCDC_ON
+	ret z
+	call Delay3
+	ret
+.notCGB
 	push de
 	call SendSGBPacket
 	pop hl
 	jp SendSGBPacket
+
+InitCGBPalettes:
+	ld a, [hl]
+	and $f8
+	cp $20
+	jp z, TranslatePalPacketToBGMapAttributes
+
+	inc hl
+
+	FOR index, NUM_ACTIVE_PALS
+		IF index > 0
+			pop hl
+		ENDC
+
+		ld a, [hli]
+		inc hl
+
+		IF index < NUM_ACTIVE_PALS - 1
+			push hl
+		ENDC
+
+		call GetCGBBasePalAddress
+		ld a, e
+		ld [wCGBBasePalPointers + index * 2], a
+		ld a, d
+		ld [wCGBBasePalPointers + index * 2 + 1], a
+
+		xor a ; CONVERT_BGP
+		call DMGPalToCGBPal
+		ld a, index
+		call TransferCurBGPData
+
+		ld a, CONVERT_OBP0
+		call DMGPalToCGBPal
+		ld a, index
+		call TransferCurOBPData
+
+		ld a, CONVERT_OBP1
+		call DMGPalToCGBPal
+		ld a, index + 4
+		call TransferCurOBPData
+	ENDR
+
+	ret
+
+GetCGBBasePalAddress::
+; Input: a = palette ID
+; Output: de = palette address
+	push hl
+	ld l, a
+	xor a
+	ld h, a
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	ld de, CGBBasePalettes
+	add hl, de
+	ld a, l
+	ld e, a
+	ld a, h
+	ld d, a
+	pop hl
+	ret
+
+DMGPalToCGBPal::
+; Populate wCGBPal with colors from a base palette, selected using one of the
+; DMG palette registers.
+; Input:
+; a = which DMG palette register
+; de = address of CGB base palette
+	and a
+	jr nz, .notBGP
+	ldh a, [rBGP]
+	ld [wLastBGP], a
+	jr .convert
+.notBGP
+	dec a
+	jr nz, .notOBP0
+	ldh a, [rOBP0]
+	ld [wLastOBP0], a
+	jr .convert
+.notOBP0
+	ldh a, [rOBP1]
+	ld [wLastOBP1], a
+.convert
+	FOR color_index, PAL_COLORS
+		ld b, a
+		and %11
+		call .GetColorAddress
+		ld a, [hli]
+		ld [wCGBPal + color_index * 2], a
+		ld a, [hl]
+		ld [wCGBPal + color_index * 2 + 1], a
+
+		IF color_index < PAL_COLORS - 1
+			ld a, b
+			rrca
+			rrca
+		ENDC
+	ENDR
+	ret
+
+.GetColorAddress:
+	add a
+	ld l, a
+	xor a
+	ld h, a
+	add hl, de
+	ret
+
+TransferCurBGPData::
+	push de
+	add a
+	add a
+	add a
+	or $80 ; auto-increment
+	ldh [rBGPI], a
+	ld de, rBGPD
+	ld hl, wCGBPal
+	ld b, %10 ; mask for non-V-blank/non-H-blank STAT mode
+	ldh a, [rLCDC]
+	and LCDC_ON
+	jr nz, .lcdEnabled
+	REPT PAL_COLORS
+		call TransferPalColorLCDDisabled
+	ENDR
+	jr .done
+.lcdEnabled
+	REPT PAL_COLORS
+		call TransferPalColorLCDEnabled
+	ENDR
+.done
+	pop de
+	ret
+
+BufferBGPPal::
+; Copy wCGBPal to palette a in wBGPPalsBuffer.
+	push de
+	add a
+	add a
+	add a
+	ld l, a
+	xor a
+	ld h, a
+	ld de, wBGPPalsBuffer
+	add hl, de
+	ld de, wCGBPal
+	ld c, PAL_SIZE
+.loop
+	ld a, [de]
+	ld [hli], a
+	inc de
+	dec c
+	jr nz, .loop
+	pop de
+	ret
+
+TransferBGPPals::
+; Transfer the buffered BG palettes.
+	ldh a, [rLCDC]
+	and LCDC_ON
+	jr z, .lcdDisabled
+	di
+.waitLoop
+	ldh a, [rLY]
+	cp 144
+	jr c, .waitLoop
+.lcdDisabled
+	call .DoTransfer
+	ei
+	ret
+
+.DoTransfer:
+	xor a
+	or $80 ; auto-increment
+	ldh [rBGPI], a
+	ld de, rBGPD
+	ld hl, wBGPPalsBuffer
+	ld c, 4 * PAL_SIZE
+.loop
+	ld a, [hli]
+	ld [de], a
+	dec c
+	jr nz, .loop
+	ret
+
+TransferCurOBPData:
+	push de
+	add a
+	add a
+	add a
+	or $80 ; auto-increment
+	ldh [rOBPI], a
+	ld de, rOBPD
+	ld hl, wCGBPal
+	ld b, %10 ; mask for non-V-blank/non-H-blank STAT mode
+	ldh a, [rLCDC]
+	and LCDC_ON
+	jr nz, .lcdEnabled
+	REPT PAL_COLORS
+		call TransferPalColorLCDDisabled
+	ENDR
+	jr .done
+.lcdEnabled
+	REPT PAL_COLORS
+		call TransferPalColorLCDEnabled
+	ENDR
+.done
+	pop de
+	ret
+
+TransferPalColorLCDEnabled:
+; Transfer a palette color while the LCD is enabled.
+
+; In case we're already in H-blank or V-blank, wait for it to end. This is a
+; precaution so that the transfer doesn't extend past the blanking period.
+	ldh a, [rSTAT]
+	and b
+	jr z, TransferPalColorLCDEnabled
+
+; Wait for H-blank or V-blank to begin.
+.notInBlankingPeriod
+	ldh a, [rSTAT]
+	and b
+	jr nz, .notInBlankingPeriod
+; fall through
+
+TransferPalColorLCDDisabled:
+; Transfer a palette color while the LCD is disabled.
+	ld a, [hli]
+	ld [de], a
+	ld a, [hli]
+	ld [de], a
+	ret
+
+_UpdateCGBPal_BGP_CheckDMG::
+	ldh a, [hOnCGB]
+	and a
+	ret z
+; fall through
+
+_UpdateCGBPal_BGP::
+	FOR index, NUM_ACTIVE_PALS
+		ld a, [wCGBBasePalPointers + index * 2]
+		ld e, a
+		ld a, [wCGBBasePalPointers + index * 2 + 1]
+		ld d, a
+		xor a ; CONVERT_BGP
+		call DMGPalToCGBPal
+		ld a, index
+		call BufferBGPPal
+	ENDR
+
+	call TransferBGPPals
+	ret
+
+_UpdateCGBPal_OBP::
+	FOR index, NUM_ACTIVE_PALS
+		ld a, [wCGBBasePalPointers + index * 2]
+		ld e, a
+		ld a, [wCGBBasePalPointers + index * 2 + 1]
+		ld d, a
+		ld a, c
+		call DMGPalToCGBPal
+		ld a, c
+		dec a
+		rlca
+		rlca
+
+		IF index > 0
+			IF index == 1
+				inc a
+			ELSE
+				add index
+			ENDC
+		ENDC
+
+		call TransferCurOBPData
+	ENDR
+
+	ret
+
+TranslatePalPacketToBGMapAttributes::
+; translate the SGB pal packets into something usable for the CGB
+	push hl
+	pop de
+	ld hl, PalPacketPointers
+	ld a, [hli]
+	ld c, a
+.loop
+	ld a, e
+.innerLoop
+	cp [hl]
+	jr z, .checkHighByte
+	inc hl
+	inc hl
+	dec c
+	jr nz, .innerLoop
+	ret
+.checkHighByte
+; the low byte of pointer matched, so check the high byte
+	inc hl
+	ld a, d
+	cp [hl]
+	jr z, .foundMatchingPointer
+	inc hl
+	dec c
+	jr nz, .loop
+	ret
+.foundMatchingPointer
+	farcall LoadBGMapAttributes
+	ret
+
+PalPacketPointers::
+	db (palPacketPointersEnd - palPacketPointers) / 2
+palPacketPointers:
+	dw BlkPacket_WholeScreen
+	dw BlkPacket_Battle
+	dw BlkPacket_StatusScreen
+	dw BlkPacket_Pokedex
+	dw BlkPacket_Slots
+	dw BlkPacket_Titlescreen
+	dw BlkPacket_NidorinoIntro
+	dw wPartyMenuBlkPacket
+	dw wTrainerCardBlkPacket
+	dw BlkPacket_GameFreakIntro
+	dw wPalPacket
+	dw UnknownPacket_72751
+palPacketPointersEnd:
 
 CopySGBBorderTiles:
 ; SGB tile data is stored in a 4BPP planar format.

@@ -395,4 +395,18 @@ hJoyInput:: db
 hDisableJoypadPolling:: db
 ENDC
 
+; bit 0: draw HP fraction to the right of bar instead of below (for party menu)
+; bit 1: menu is double spaced
+; bit 2: text is single spaced
+hUILayoutFlags:: db
+
+hFieldMoveMonMenuTopMenuItemX:: db
+
+hPikachuSpriteVRAMOffset:: db
+
+	ds 1
+
+; 0 if DMG, != 0 if CGB
+hOnCGB:: db
+
 ENDSECTION

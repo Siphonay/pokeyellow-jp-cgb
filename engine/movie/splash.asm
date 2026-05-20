@@ -3,6 +3,8 @@ LoadShootingStarGraphics:
 	ldh [rOBP0], a
 	ld a, $a4
 	ldh [rOBP1], a
+	call UpdateCGBPal_OBP0
+	call UpdateCGBPal_OBP1
 	ld de, MoveAnimationTiles1 tile 3 ; star tile (top left quadrant)
 	ld hl, vChars1 tile $20
 	lb bc, BANK(MoveAnimationTiles1), 1
@@ -75,6 +77,7 @@ AnimateShootingStar:
 	ld hl, rOBP0
 	rrc [hl]
 	rrc [hl]
+	call UpdateCGBPal_OBP0
 	ld c, 10
 	call CheckForUserInterruption
 	ret c
@@ -200,6 +203,7 @@ MoveDownSmallStars:
 	ldh a, [rOBP1]
 	xor %10100000
 	ldh [rOBP1], a
+	call UpdateCGBPal_OBP1
 	ld c, 3
 	call CheckForUserInterruption
 	ret c
@@ -227,10 +231,10 @@ GameFreakLogoOAMData:
 GameFreakLogoOAMDataEnd:
 
 GameFreakShootingStarOAMData:
-	dbsprite 20,  0,  0,  0, $a0, OAM_PAL1
-	dbsprite 21,  0,  0,  0, $a0, OAM_PAL1 | OAM_XFLIP
-	dbsprite 20,  1,  0,  0, $a1, OAM_PAL1
-	dbsprite 21,  1,  0,  0, $a1, OAM_PAL1 | OAM_XFLIP
+	dbsprite 20,  0,  0,  0, $a0, OAM_PAL1 | OAM_HIGH_PALS
+	dbsprite 21,  0,  0,  0, $a0, OAM_PAL1 | OAM_HIGH_PALS | OAM_XFLIP
+	dbsprite 20,  1,  0,  0, $a1, OAM_PAL1 | OAM_HIGH_PALS
+	dbsprite 21,  1,  0,  0, $a1, OAM_PAL1 | OAM_HIGH_PALS | OAM_XFLIP
 GameFreakShootingStarOAMDataEnd:
 
 FallingStar:

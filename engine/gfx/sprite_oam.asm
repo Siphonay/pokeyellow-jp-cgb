@@ -112,6 +112,10 @@ PrepareOAMData::
 	or [hl]
 .skipPriority
 	and $f0
+	bit B_OAM_PAL1, a
+	jr z, .spriteusesOBP0
+	or OAM_HIGH_PALS
+.spriteusesOBP0
 	ld [de], a
 	inc hl
 	inc e

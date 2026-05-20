@@ -28,15 +28,13 @@ ROM0
 	org $0060
 	"joypad"
 	org $0068
-	"Garbage Header"
-	org $100
+	"High Home"
+	org $103
 	"Header"
-	org $150
+	org $153
  	"Home"
-	"Garbage 0"
 ROMX $1
 	"bank1"
-	"Garbage 1"
 ROMX $2
 	"Sound Effect Headers 1"
 	"Music Headers 1"
@@ -67,7 +65,6 @@ ROMX $7
 	"Clear Save"
 	"Maps 4"
 	"Hidden Events 1"
-	"Garbage 7"
 ROMX $8
 	"Sound Effect Headers 2"
 	"Music Headers 2"
@@ -101,7 +98,6 @@ ROMX $e
 	; Rev.0 - Rev.2: "Garbage 14"
 ROMX $f
 	"Battle Core"
-	"Garbage 15"
 ROMX $10
 	"bank10"
 	; Rev.0 - Rev.2: "Garbage 16"
@@ -221,6 +217,9 @@ ROMX $2e
 	; Rev.0 - Rev.2: "Garbage 46"
 ROMX $2f
 	; Rev.0 - Rev.2: "Garbage 47"
+	"BG Map Attributes (Debug)"
+	org $5000
+	"BG Map Attributes"
 ROMX $30
 	"bank30"
 	"Pikachu Graphics 1"
@@ -278,7 +277,6 @@ ROMX $3e
 ROMX $3f
 	"Overworld Pikachu"
 	"NPC Sprites 3"
-	"Garbage 63"
 WRAM0
 	"Audio RAM"
 	org $c100
@@ -291,7 +289,8 @@ WRAM0
 	"Party Data"
 	"Main Data"
 	"Current Box Data"
-	org $df18
+	"CGB Palette Data"
+	org $df4c
 	"Stack"
 VRAM
 	"VRAM"

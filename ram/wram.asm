@@ -2495,6 +2495,17 @@ wBoxMonNicksEnd::
 wBoxDataEnd::
 
 
+SECTION "CGB Palette Data", WRAM0
+
+wCGBBasePalPointers:: ds NUM_ACTIVE_PALS * 2
+wCGBPal:: ds PAL_SIZE
+wLastBGP:: db
+wLastOBP0:: db
+wLastOBP1:: db
+wdef4:: db
+wBGPPalsBuffer:: ds NUM_ACTIVE_PALS * PAL_SIZE
+
+
 SECTION "Stack", WRAM0
 
 ; the stack grows downward

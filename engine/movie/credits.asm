@@ -20,6 +20,7 @@ HallOfFamePC:
 	call FillFourRowsWithBlack
 	ld a, %11000000
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	call EnableLCD
 	call StopAllMusic
 	ld hl, vBGMap1
@@ -44,6 +45,7 @@ FadeInCredits:
 .loop
 	ld a, [hli]
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	ld c, 5
 	call DelayFrames
 	dec b
@@ -75,6 +77,7 @@ DisplayCreditsMon:
 	call CreditsCopyTileMapToVRAM
 	ld a, %11111100 ; make the mon a black silhouette
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	ld hl, rLCDC
 	res B_LCDC_BG_MAP, [hl]
 	ld a, 1
@@ -90,6 +93,7 @@ DisplayCreditsMon:
 	call ScrollCreditsMonLeft
 	ld a, %11000000
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	xor a
 	ldh [hSCX], a
 	ret

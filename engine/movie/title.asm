@@ -70,6 +70,7 @@ DisplayTitleScreen:
 	call GBPalNormal
 	ld a, %11100000
 	ldh [rOBP0], a
+	call UpdateCGBPal_OBP0
 
 ; make pokemon logo bounce up and down
 	ld bc, hSCY ; background scroll Y

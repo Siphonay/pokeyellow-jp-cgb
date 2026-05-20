@@ -85,6 +85,7 @@ PlayShootingStar:
 	farcall LoadCopyrightAndTextBoxTiles
 	ldpal a, SHADE_BLACK, SHADE_DARK, SHADE_LIGHT, SHADE_WHITE
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	ld c, 180
 	call DelayFrames
 	call ClearScreen
