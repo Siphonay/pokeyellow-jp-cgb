@@ -308,6 +308,21 @@ INCLUDE "data/battle_anims/frame_blocks.asm"
 INCLUDE "engine/movie/evolution.asm"
 
 
+SECTION "BG Map Attributes (Debug)", ROMX
+
+IF DEF(_DEBUG)
+	INCLUDE "engine/gfx/bg_map_attributes.asm"
+ENDC
+
+
+SECTION "BG Map Attributes", ROMX
+
+INCLUDE "data/cgb/bg_map_attributes.asm"
+IF !DEF(_DEBUG)
+	INCLUDE "engine/gfx/bg_map_attributes.asm"
+ENDC
+
+
 SECTION "bank29", ROMX
 
 INCLUDE "engine/movie/title_yellow.asm"

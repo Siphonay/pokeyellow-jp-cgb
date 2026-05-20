@@ -395,4 +395,6 @@ hJoyInput:: db
 hDisableJoypadPolling:: db
 ENDC
 
+hOnCGB:: db
+
 ENDSECTION

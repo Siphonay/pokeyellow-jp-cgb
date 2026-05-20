@@ -21,6 +21,11 @@ PlayIntroScene:
 	ld a, $0
 	ld [wCurrentAnimatedObjectOAMBufferOffset], a
 	call RunObjectAnimations
+	ld a, [wYellowIntroCurrentScene]
+	cp $7
+	call z, Func_f98a2
+	cp $b
+	call z, Func_f98cb
 	call DelayFrame
 	jr .loop
 
@@ -49,6 +54,45 @@ PlayIntroScene:
 	call DelayFrame
 	xor a
 	ldh [hAutoBGTransferEnabled], a
+	ret
+
+Func_f98a2:
+	ld a, [wShadowOAMSprite08Attributes]
+	or $1
+	ld [wShadowOAMSprite08Attributes], a
+	ld a, [wShadowOAMSprite14Attributes]
+	or $1
+	ld [wShadowOAMSprite14Attributes], a
+	ld a, [wShadowOAMSprite16Attributes]
+	or $1
+	ld [wShadowOAMSprite16Attributes], a
+	ld a, [wShadowOAMSprite18Attributes]
+	or $1
+	ld [wShadowOAMSprite18Attributes], a
+	ld a, [wShadowOAMSprite19Attributes]
+	or $1
+	ld [wShadowOAMSprite19Attributes], a
+	ret
+
+Func_f98cb:
+	ld a, [wShadowOAMSprite18Attributes]
+	or $1
+	ld [wShadowOAMSprite18Attributes], a
+	ld a, [wShadowOAMSprite19Attributes]
+	or $1
+	ld [wShadowOAMSprite19Attributes], a
+	ld a, [wShadowOAMSprite20Attributes]
+	or $1
+	ld [wShadowOAMSprite20Attributes], a
+	ld a, [wShadowOAMSprite25Attributes]
+	or $1
+	ld [wShadowOAMSprite25Attributes], a
+	ld a, [wShadowOAMSprite26Attributes]
+	or $1
+	ld [wShadowOAMSprite26Attributes], a
+	ld a, [wShadowOAMSprite28Attributes]
+	or $1
+	ld [wShadowOAMSprite28Attributes], a
 	ret
 
 Func_f98fc:
@@ -99,6 +143,9 @@ YellowIntroScene0:
 	ldh [rOBP0], a
 	ld a, $c4
 	ldh [rOBP1], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
+	call UpdateCGBPal_OBP1
 	ld a, 130
 	ld [wYellowIntroSceneTimer], a
 	call YellowIntro_NextScene
@@ -151,6 +198,29 @@ YellowIntroScene2_PlaceGraphic:
 	add $10
 	dec b
 	jr nz, .row
+	ldh a, [hOnCGB]
+	and a
+	jr z, .dmg_sgb
+	; We can actually set palettes!
+	ld hl, $98d4 ; (20, 6)
+	ld de, $20
+	ld b, $6
+	ld a, $1
+	ldh [rVBK], a
+.attr_row
+	ld c, $6
+	push hl
+.attr_col
+	ld [hli], a
+	dec c
+	jr nz, .attr_col
+	pop hl
+	add hl, de
+	dec b
+	jr nz, .attr_row
+	xor a
+	ldh [rVBK], a
+.dmg_sgb
 	ret
 
 LoadYellowIntroFlyingSpeedBars:
@@ -208,6 +278,30 @@ YellowIntroScene4:
 	call YellowIntro_BlankPalsDelay2AndDisableLCD
 	ld c, $5
 	call UpdateMusicCTimes
+	ldh a, [hOnCGB]
+	and a
+	jr z, .dmg_sgb
+	; We can actually set palettes!
+	ld hl, $98d4
+	ld de, $20
+	ld b, $6
+	ld a, $1
+	ldh [rVBK], a
+	xor a
+.attr_row
+	ld c, $6
+	push hl
+.attr_col
+	ld [hli], a
+	dec c
+	jr nz, .attr_col
+	pop hl
+	add hl, de
+	dec b
+	jr nz, .attr_row
+	xor a
+	ldh [rVBK], a
+.dmg_sgb
 	xor a
 	ldh [hLCDCPointer], a
 	call Func_f9e5f
@@ -472,6 +566,9 @@ YellowIntroScene14:
 	ldh [rOBP0], a
 	and $f0
 	ldh [rOBP1], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
+	call UpdateCGBPal_OBP1
 	ret
 
 .expired
@@ -499,6 +596,8 @@ YellowIntroScene14:
 	ld a, $e4
 	ldh [rOBP0], a
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
 	lb de, $58, $58
 	ld a, $7
 	call YellowIntro_SpawnAnimatedObjectAndSavePointer
@@ -520,6 +619,8 @@ YellowIntroScene15:
 	ldh a, [rBGP]
 	xor $3
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
 	ret
 
 .expired
@@ -528,6 +629,8 @@ YellowIntroScene15:
 	ld a, $e4
 	ldh [rBGP], a
 	ldh [rOBP0], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
 	call YellowIntro_NextScene
 YellowIntroScene16:
 	ld de, YellowIntroPalSequence_f9e0a
@@ -535,6 +638,8 @@ YellowIntroScene16:
 	jr c, .expired
 	ldh [rOBP0], a
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
 	ret
 
 .expired
@@ -650,6 +755,9 @@ YellowIntro_BlankPalsDelay2AndDisableLCD:
 	ldh [rBGP], a
 	ldh [rOBP0], a
 	ldh [rOBP1], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
+	call UpdateCGBPal_OBP1
 	call DelayFrame
 	call DelayFrame
 	call DisableLCD
@@ -670,6 +778,9 @@ Func_f9e9a:
 	ldh [rOBP0], a
 	ld a, $e0
 	ldh [rOBP1], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
+	call UpdateCGBPal_OBP1
 	ret
 
 YellowIntro_Copy8BitSineWave:
@@ -816,6 +927,9 @@ YellowIntro_BlankPalettes:
 	ldh [rBGP], a
 	ldh [rOBP0], a
 	ldh [rOBP1], a
+	call UpdateCGBPal_BGP
+	call UpdateCGBPal_OBP0
+	call UpdateCGBPal_OBP1
 	ret
 
 YellowIntro_AnimatedObjectSpawnStateData:

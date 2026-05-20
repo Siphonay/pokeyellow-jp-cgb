@@ -1,14 +1,16 @@
-; inverts the BGP for 4 frames
+; inverts the BGP for 4 (6 on CGB due to lag) frames
 ChangeBGPalColor0_4Frames:
 	call GetPredefRegisters ; leftover of red/green/blue, has no use here
 	ldh a, [rBGP]
 	xor $ff
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	ld c, 4
 	call DelayFrames
 	ldh a, [rBGP]
 	xor $ff
 	ldh [rBGP], a
+	call UpdateCGBPal_BGP
 	ret
 
 PredefShakeScreenVertically:

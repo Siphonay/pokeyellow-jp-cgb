@@ -658,6 +658,10 @@ ENDU
 	ds 8
 wMiscBattleDataEnd::
 NEXTU
+	ds 2
+	wTrainerCardBadgeAttributes:: ds 6 * 9 + 1
+	
+NEXTU
 wPikaPicUsedGFXCount:: db
 
 wPikaPicUsedGFX:: ds 8 * 2
@@ -1244,6 +1248,10 @@ NEXTU
 ; the total amount of exp a mon gained
 wExpAmountGained:: dw
 wGainBoostedExp:: db
+
+NEXTU
+	ds 9
+wPartyHPBarAttributes:: ds PARTY_LENGTH
 ENDU
 
 wGymCityName:: ds GYM_CITY_LENGTH
@@ -2284,7 +2292,6 @@ wSeafoamIslandsB3FCurScript:: db
 wRoute23CurScript:: db
 wSeafoamIslandsB4FCurScript:: db
 wRoute18Gate1FCurScript:: db
-	ds 78
 wGameProgressFlagsEnd::
 
 	ds 56
@@ -2493,6 +2500,17 @@ ENDR
 wBoxMonNicksEnd::
 
 wBoxDataEnd::
+
+
+SECTION "CGB Palette Data", WRAM0
+
+wCGBBasePalPointers:: ds NUM_ACTIVE_PALS * 2
+wCGBPal:: ds PAL_SIZE
+wLastBGP:: db
+wLastOBP0:: db
+wLastOBP1:: db
+wdef4:: db
+wBGPPalsBuffer:: ds NUM_ACTIVE_PALS * PAL_SIZE
 
 
 SECTION "Stack", WRAM0

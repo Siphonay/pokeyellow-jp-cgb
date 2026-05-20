@@ -1,13 +1,12 @@
 roms    := \
-	pokeyellow.gb \
-	pokeyellow11.gb \
-	pokeyellow12.gb \
-	pokeyellow13.gb
+	pokeyellow.gbc \
+	pokeyellow11.gbc \
+	pokeyellow12.gbc \
+	pokeyellow13.gbc
 patches := pokeyellow13.patch
 
 rom_obj := \
 	audio.o \
-	garbage.o \
 	home.o \
 	main.o \
 	maps.o \
@@ -64,10 +63,10 @@ RGBGFXFLAGS  ?= -Weverything
 	tools
 
 all: $(roms)
-yellow:      pokeyellow.gb
-yellow11:    pokeyellow11.gb
-yellow12:    pokeyellow12.gb
-yellow13:    pokeyellow13.gb
+yellow:      pokeyellow.gbc
+yellow11:    pokeyellow11.gbc
+yellow12:    pokeyellow12.gbc
+yellow13:    pokeyellow13.gbc
 yellow13_vc: pokeyellow13.patch
 
 clean: tidy
@@ -116,7 +115,7 @@ $(pokeyellow12_obj):    RGBASMFLAGS += -D _REV2
 $(pokeyellow13_obj):    RGBASMFLAGS += -D _REV3
 $(pokeyellow13_vc_obj): RGBASMFLAGS += -D _REV3 -D _YELLOW_VC
 
-%.patch: %_vc.gb %.gb vc/%.patch.template
+%.patch: %_vc.gbc %.gbc vc/%.patch.template
 	tools/make_patch $*_vc.sym $^ $@
 
 rgbdscheck.o: rgbdscheck.asm
@@ -149,14 +148,14 @@ endif
 
 RGBLINKFLAGS += -d -p 0
 
-RGBFIXFLAGS += -sv -k 01 -l 0x33 -m MBC3+RAM+BATTERY -r 03 -p 0 -t "POKEMON YELLOW"
-pokeyellow.gb:      RGBFIXFLAGS += -n 0
-pokeyellow11.gb:    RGBFIXFLAGS += -n 1
-pokeyellow12.gb:    RGBFIXFLAGS += -n 2
-pokeyellow13.gb:    RGBFIXFLAGS += -n 3
-pokeyellow13_vc.gb: RGBFIXFLAGS += -n 3
+RGBFIXFLAGS += -cjsv -k 01 -l 0x33 -m MBC3+RAM+BATTERY -r 03 -p 0 -t "POKEMON YELLOW"
+pokeyellow.gbc:      RGBFIXFLAGS += -n 0
+pokeyellow11.gbc:    RGBFIXFLAGS += -n 1
+pokeyellow12.gbc:    RGBFIXFLAGS += -n 2
+pokeyellow13.gbc:    RGBFIXFLAGS += -n 3
+pokeyellow13_vc.gbc: RGBFIXFLAGS += -n 3
 
-%.gb: $$(%_obj) layout.link
+%.gbc: $$(%_obj) layout.link
 	$(RGBLINK) $(RGBLINKFLAGS) -l layout.link -m $*.map -n $*.sym -o $@ $(filter %.o,$^)
 	$(RGBFIX) $(RGBFIXFLAGS) $@
 

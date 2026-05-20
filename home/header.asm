@@ -1,7 +1,8 @@
 ; rst vectors (unused)
 
 SECTION "rst0", ROM0[$0000]
-	rst $38
+	_Bankswitch::
+		jp Bankswitch
 
 	ds $08 - @, 0 ; unused
 
@@ -78,7 +79,7 @@ Start::
 ; Nintendo requires all Game Boy ROMs to begin with a nop ($00) and a jp ($C3)
 ; to the starting address.
 	nop
-	jp Init
+	jp _Start
 
 ; The Game Boy cartridge header data is patched over by rgbfix.
 ; This makes sure it doesn't get used for anything else.

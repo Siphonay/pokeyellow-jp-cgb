@@ -4,6 +4,13 @@ NULL::
 INCLUDE "home/header.asm"
 
 
+SECTION "High Home", ROM0
+
+INCLUDE "home/lcd.asm"
+INCLUDE "home/clear_sprites.asm"
+INCLUDE "home/copy.asm"
+
+
 SECTION "Home", ROM0
 
 INCLUDE "home/pikachu_cries.asm"
@@ -15,9 +22,7 @@ INCLUDE "home/print_bcd.asm"
 INCLUDE "home/pics.asm"
 INCLUDE "home/pikachu.asm"
 INCLUDE "home/lcdc.asm"
-INCLUDE "home/lcd.asm"
-INCLUDE "home/clear_sprites.asm"
-INCLUDE "home/copy.asm"
+INCLUDE "home/copy2.asm"
 INCLUDE "home/text.asm"
 INCLUDE "home/vcopy.asm"
 INCLUDE "home/init.asm"
@@ -45,6 +50,7 @@ INCLUDE "home/reload_tiles.asm"
 INCLUDE "home/printer.asm"
 INCLUDE "home/item.asm"
 INCLUDE "home/textbox.asm"
+INCLUDE "home/cgb_palettes.asm"
 INCLUDE "home/npc_movement.asm"
 INCLUDE "home/trainers.asm"
 INCLUDE "home/map_objects.asm"
