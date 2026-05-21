@@ -172,7 +172,7 @@ GetFarByte::
 
 ClearScreenArea::
 ; Clear tilemap area cxb at hl.
-	ld a, ' '
+	ld a, '　'
 	ld de, SCREEN_WIDTH
 .loopRows
 	push hl
@@ -229,7 +229,7 @@ ClearScreen::
 	ld bc, SCREEN_AREA
 	inc b
 	hlcoord 0, 0
-	ld a, ' '
+	ld a, '　'
 .loop
 	ld [hli], a
 	dec c
@@ -237,3 +237,23 @@ ClearScreen::
 	dec b
 	jr nz, .loop
 	jp Delay3
+
+CopyVideoDataDoubleAlternate::
+	ldh a, [rLCDC]
+	bit B_LCDC_ENABLE, a ; LCD enabled?
+	jp nz, CopyVideoDataDouble ; if yes, then copy video data
+	push de
+	ld d, h
+	ld e, l
+	ld a, b
+	push af ; save bank to switch to
+	ld h, $0
+	ld l, c
+	add hl, hl ; get raw length of bytes to copy
+	add hl, hl
+	add hl, hl
+	ld b, h
+	ld c, l
+	pop af
+	pop hl
+	jp FarCopyDataDouble

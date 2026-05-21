@@ -29,9 +29,9 @@ ROM0
 	"joypad"
 	org $0068
 	"High Home"
-	org $103
+	org $100
 	"Header"
-	org $153
+	org $150
  	"Home"
 ROMX $1
 	"bank1"
@@ -234,7 +234,7 @@ WRAM0
 	"Main Data"
 	"Current Box Data"
 	"CGB Palette Data"
-	org $df18
+	org $defe
 	"Stack"
 VRAM
 	"VRAM"
